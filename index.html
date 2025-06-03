@@ -93,9 +93,8 @@
 </head>
 <body class="glitch" id="body">
   <div id="flash"></div>
-  <audio id="glitch-audio" autoplay loop>
+  <audio id="glitch-audio" loop muted>
     <source src="https://cdn.freesound.org/previews/341/341695_6262510-lq.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
   </audio>
   <audio id="key-audio">
     <source src="https://cdn.freesound.org/previews/270/270312_5123851-lq.mp3" type="audio/mpeg">
@@ -124,9 +123,15 @@
     const terminal = document.getElementById("terminal");
     const keyAudio = document.getElementById("key-audio");
     const endAudio = document.getElementById("end-audio");
+    const glitchAudio = document.getElementById("glitch-audio");
     const body = document.getElementById("body");
     const flash = document.getElementById("flash");
     let lineIndex = 0;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      glitchAudio.muted = false;
+      glitchAudio.play().catch(() => {});
+    });
 
     function typeHTMLContent(text, callback) {
       const div = document.createElement('div');

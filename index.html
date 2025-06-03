@@ -11,24 +11,27 @@
       font-size: 1.5em;
       padding: 2rem;
       text-align: center;
+      overflow: hidden;
     }
     #signal {
       position: absolute;
       top: 1rem;
       left: 1rem;
-      color: #ff66cc;
+      color: #ff3333;
       font-weight: bold;
     }
     #terminal {
       white-space: pre-wrap;
+      position: relative;
+      z-index: 2;
     }
     .highlight {
-      color: #ff66cc;
+      color: #ff3333;
     }
     .cursor {
       display: inline-block;
       width: 10px;
-      background: #ff66cc;
+      background: #ff3333;
       animation: blink 1s step-start 0s infinite;
     }
     #counter {
@@ -37,9 +40,18 @@
       right: 1rem;
       font-size: 0.8em;
       color: #888;
+      z-index: 2;
     }
     .glitch {
       animation: glitch 0.15s infinite;
+    }
+    .artifact {
+      position: absolute;
+      width: 2px;
+      height: 100vh;
+      background: rgba(255, 0, 0, 0.12);
+      animation: artifactAnim 0.1s infinite;
+      z-index: 1;
     }
     @keyframes blink {
       50% { background: transparent; }
@@ -52,6 +64,11 @@
       80% { transform: translate(2px, -1px); }
       100% { transform: translate(0px, 0px); }
     }
+    @keyframes artifactAnim {
+      0% { opacity: 0.1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 0.1; }
+    }
   </style>
 </head>
 <body class="glitch">
@@ -59,6 +76,12 @@
     <source src="https://freesound.org/data/previews/320/320629_5260877-lq.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
+
+  <div class="artifact" style="left: 10%;"></div>
+  <div class="artifact" style="left: 30%;"></div>
+  <div class="artifact" style="left: 50%;"></div>
+  <div class="artifact" style="left: 70%;"></div>
+  <div class="artifact" style="left: 90%;"></div>
 
   <div id="signal">signal_001</div>
   <div id="terminal"></div><span class="cursor"></span>

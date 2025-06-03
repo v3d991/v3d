@@ -93,16 +93,6 @@
 </head>
 <body class="glitch" id="body">
   <div id="flash"></div>
-  <audio id="glitch-audio" loop muted>
-    <source src="https://cdn.freesound.org/previews/341/341695_6262510-lq.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="key-audio">
-    <source src="https://cdn.freesound.org/previews/270/270312_5123851-lq.mp3" type="audio/mpeg">
-  </audio>
-  <audio id="end-audio">
-    <source src="https://cdn.freesound.org/previews/352/352661_4019027-lq.mp3" type="audio/mpeg">
-  </audio>
-
   <div class="artifact" style="left: 10%;"></div>
   <div class="artifact" style="left: 30%;"></div>
   <div class="artifact" style="left: 50%;"></div>
@@ -121,17 +111,46 @@
     ];
 
     const terminal = document.getElementById("terminal");
-    const keyAudio = document.getElementById("key-audio");
-    const endAudio = document.getElementById("end-audio");
-    const glitchAudio = document.getElementById("glitch-audio");
     const body = document.getElementById("body");
     const flash = document.getElementById("flash");
     let lineIndex = 0;
 
-    document.addEventListener("DOMContentLoaded", () => {
-      glitchAudio.muted = false;
-      glitchAudio.play().catch(() => {});
-    });
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    let glitchSource, keyBuffer, endBuffer;
+
+    function loadSound(url) {
+      return fetch(url)
+        .then(response => response.arrayBuffer())
+        .then(buffer => audioCtx.decodeAudioData(buffer));
+    }
+
+    async function loadAndPlay() {
+      const glitch = await loadSound("https://cdn.freesound.org/previews/341/341695_6262510-lq.mp3");
+      keyBuffer = await loadSound("https://cdn.freesound.org/previews/270/270312_5123851-lq.mp3");
+      endBuffer = await loadSound("https://cdn.freesound.org/previews/352/352661_4019027-lq.mp3");
+      glitchSource = audioCtx.createBufferSource();
+      glitchSource.buffer = glitch;
+      glitchSource.loop = true;
+      glitchSource.connect(audioCtx.destination);
+      glitchSource.start();
+    }
+
+    function playKeySound() {
+      if (!keyBuffer) return;
+      const src = audioCtx.createBufferSource();
+      src.buffer = keyBuffer;
+      src.connect(audioCtx.destination);
+      src.start(0);
+    }
+
+    function playEndSound() {
+      if (!endBuffer) return;
+      const src = audioCtx.createBufferSource();
+      src.buffer = endBuffer;
+      src.connect(audioCtx.destination);
+      src.start(0);
+    }
 
     function typeHTMLContent(text, callback) {
       const div = document.createElement('div');
@@ -148,8 +167,7 @@
             function typeText() {
               if (i < text.length) {
                 terminal.innerHTML += text.charAt(i);
-                keyAudio.currentTime = 0;
-                keyAudio.play();
+                playKeySound();
                 i++;
                 setTimeout(typeText, 100);
               } else {
@@ -179,7 +197,7 @@
         });
       } else {
         setTimeout(() => {
-          endAudio.play();
+          playEndSound();
           flash.style.animation = "flash 1s ease-in-out";
           setTimeout(() => {
             body.style.backgroundColor = "black";
@@ -189,7 +207,13 @@
       }
     }
 
-    typeNextLine();
+    window.addEventListener('load', () => {
+      audioCtx.resume().then(() => {
+        loadAndPlay().then(() => {
+          typeNextLine();
+        });
+      });
+    });
 
     fetch('https://api.countapi.xyz/hit/v3d991.github.io/views')
       .then(res => {

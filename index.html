@@ -38,12 +38,28 @@
       font-size: 0.8em;
       color: #888;
     }
+    .glitch {
+      animation: glitch 0.15s infinite;
+    }
     @keyframes blink {
       50% { background: transparent; }
     }
+    @keyframes glitch {
+      0% { transform: translate(0px, 0px); }
+      20% { transform: translate(-2px, 1px); }
+      40% { transform: translate(1px, -1px); }
+      60% { transform: translate(-1px, 2px); }
+      80% { transform: translate(2px, -1px); }
+      100% { transform: translate(0px, 0px); }
+    }
   </style>
 </head>
-<body>
+<body class="glitch">
+  <audio id="glitch-audio" autoplay loop>
+    <source src="https://freesound.org/data/previews/320/320629_5260877-lq.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
   <div id="signal">signal_001</div>
   <div id="terminal"></div><span class="cursor"></span>
   <div id="counter">Loading views...</div>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello World Terminal</title>
+  <style>
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.5em;
+      padding: 2rem;
+    }
+    #terminal {
+      white-space: pre-wrap;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background: #00ff00;
+      animation: blink 1s step-start 0s infinite;
+    }
+    @keyframes blink {
+      50% { background: transparent; }
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div><span class="cursor"></span>
+
+  <script>
+    const text = "Hello, world...";
+    const terminal = document.getElementById("terminal");
+    let index = 0;
+
+    function typeNextChar() {
+      if (index < text.length) {
+        terminal.textContent += text.charAt(index);
+        index++;
+        setTimeout(typeNextChar, 150);
+      }
+    }
+
+    typeNextChar();
+  </script>
+</body>
+</html>

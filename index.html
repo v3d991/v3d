@@ -12,6 +12,26 @@
       padding: 2rem;
       text-align: center;
       overflow: hidden;
+      transition: background-color 1s, color 1s;
+    }
+    #flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0;
+      z-index: 9999;
+      pointer-events: none;
+      animation: none;
+    }
+    @keyframes flash {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      20% { opacity: 0; }
+      30% { opacity: 1; }
+      100% { opacity: 0; }
     }
     #signal {
       position: absolute;
@@ -71,10 +91,17 @@
     }
   </style>
 </head>
-<body class="glitch">
+<body class="glitch" id="body">
+  <div id="flash"></div>
   <audio id="glitch-audio" autoplay loop>
-    <source src="https://freesound.org/data/previews/320/320629_5260877-lq.mp3" type="audio/mpeg">
+    <source src="https://cdn.freesound.org/previews/341/341695_6262510-lq.mp3" type="audio/mpeg">
     Your browser does not support the audio element.
+  </audio>
+  <audio id="key-audio">
+    <source src="https://cdn.freesound.org/previews/270/270312_5123851-lq.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="end-audio">
+    <source src="https://cdn.freesound.org/previews/352/352661_4019027-lq.mp3" type="audio/mpeg">
   </audio>
 
   <div class="artifact" style="left: 10%;"></div>
@@ -95,9 +122,11 @@
     ];
 
     const terminal = document.getElementById("terminal");
+    const keyAudio = document.getElementById("key-audio");
+    const endAudio = document.getElementById("end-audio");
+    const body = document.getElementById("body");
+    const flash = document.getElementById("flash");
     let lineIndex = 0;
-    let charIndex = 0;
-    let currentSpan = "";
 
     function typeHTMLContent(text, callback) {
       const div = document.createElement('div');
@@ -114,6 +143,8 @@
             function typeText() {
               if (i < text.length) {
                 terminal.innerHTML += text.charAt(i);
+                keyAudio.currentTime = 0;
+                keyAudio.play();
                 i++;
                 setTimeout(typeText, 100);
               } else {
@@ -141,12 +172,20 @@
           lineIndex++;
           setTimeout(typeNextLine, 400);
         });
+      } else {
+        setTimeout(() => {
+          endAudio.play();
+          flash.style.animation = "flash 1s ease-in-out";
+          setTimeout(() => {
+            body.style.backgroundColor = "black";
+            body.style.color = "black";
+          }, 5000);
+        }, 500);
       }
     }
 
     typeNextLine();
 
-    // Counter logic with fallback
     fetch('https://api.countapi.xyz/hit/v3d991.github.io/views')
       .then(res => {
         if (!res.ok) throw new Error("Network response not ok");

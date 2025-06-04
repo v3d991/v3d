@@ -101,6 +101,23 @@
       display: none;
       white-space: nowrap;
       z-index: 800;
+      letter-spacing: 0.05em;
+      opacity: 0.95;
+      text-shadow: 0 2px 8px #000, 0 0 6px #ff336655;
+      transition: opacity 0.7s;
+      text-align: center;
+    }
+    #visitor-counter {
+      color: #fff;
+      font-size: 27px;
+      filter: blur(2px);
+      text-align: center;
+      margin-top: 22px;
+      opacity: 0.82;
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: 0.07em;
+      user-select: none;
+      display: none;
     }
   </style>
 </head>
@@ -114,12 +131,13 @@
   <div id="signal-tag">signal_001</div>
   <div id="typing-container"><div id="typing-text"></div></div>
   <div id="flash-overlay"></div>
-  <div id="final-message">Signal_001&nbsp;→&nbsp;d3livered</div>
-  <!-- Πιο δυνατό beep! -->
+  <div id="final-message">
+    Signal_001&nbsp;→&nbsp;d3livered
+    <div id="visitor-counter"></div>
+  </div>
   <audio id="beep-audio"
-    src="data:audio/wav;base64,UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YYAAAD/////AAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAAA"
+    src="data:audio/wav;base64,UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YYAAAD/////AAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAAA"
     preload="auto"></audio>
-  <!-- Typing effect: ήχος πληκτρολογίου -->
   <audio id="key-audio"
     src="data:audio/wav;base64,UklGRiwAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAD///8AAP+AgID/AIiIiP8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8Aj4+P/wCPj4//AI+Pj/8A" 
     preload="auto"></audio>
@@ -195,6 +213,7 @@
           document.getElementById("signal-tag").style.display = "none";
           typingContainer.style.display = "none";
           document.getElementById("final-message").style.display = "block";
+          showVisitorCounter();
         }, 600);
       }, 2000);
     }
@@ -228,6 +247,20 @@
         typingContainer.style.display = "flex";
         typeNextChar();
       }, 3000);
+    }
+
+    // Google Sheets visitor counter (global, μόνο αριθμός)
+    function showVisitorCounter() {
+      const vCounter = document.getElementById('visitor-counter');
+      vCounter.style.display = "block";
+      fetch('https://script.google.com/macros/s/AKfycbzp5KJBuZOBrslWI0b_k6uNKmAX2HIKmUPKPYW8nY1T3ME1OygY9AGLaRH6RGwxHjXq/exec')
+        .then(res => res.json())
+        .then(data => {
+          vCounter.textContent = data.visitors || '1';
+        })
+        .catch(() => {
+          vCounter.textContent = '-';
+        });
     }
   </script>
 </body>

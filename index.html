@@ -132,6 +132,14 @@
     const loopAudio = new Audio("https://upload.wikimedia.org/wikipedia/commons/3/38/Glitch_sound_effect.ogg");
     loopAudio.loop = true;
 
+    async function playSafe(audio) {
+      try {
+        await audio.play();
+      } catch (e) {
+        console.warn('Audio play blocked:', e);
+      }
+    }
+
     function typeHTMLContent(text, callback) {
       const div = document.createElement('div');
       div.innerHTML = text;
@@ -147,7 +155,7 @@
             function typeText() {
               if (i < text.length) {
                 terminal.innerHTML += text.charAt(i);
-                keyAudio.cloneNode().play();
+                playSafe(keyAudio);
                 i++;
                 setTimeout(typeText, 100);
               } else {
@@ -177,7 +185,7 @@
         });
       } else {
         setTimeout(() => {
-          endAudio.play();
+          playSafe(endAudio);
           flash.style.animation = "flash 1s ease-in-out";
           setTimeout(() => {
             body.style.backgroundColor = "black";
@@ -191,7 +199,7 @@
       startBtn.style.display = 'none';
       terminal.style.display = 'block';
       cursor.style.display = 'inline-block';
-      loopAudio.play();
+      playSafe(loopAudio);
       typeNextLine();
     }
 

@@ -89,6 +89,15 @@
       50% { opacity: 0.3; }
       100% { opacity: 0.1; }
     }
+    #startBtn {
+      background: black;
+      border: 1px solid #ff3333;
+      padding: 1rem 2rem;
+      color: #ff3333;
+      font-size: 1.2rem;
+      cursor: pointer;
+      margin-top: 30vh;
+    }
   </style>
 </head>
 <body class="glitch" id="body">
@@ -100,7 +109,8 @@
   <div class="artifact" style="left: 90%;"></div>
 
   <div id="signal">signal_001</div>
-  <div id="terminal"></div><span class="cursor"></span>
+  <button id="startBtn">ΞΥΠΝΑ &gt;</button>
+  <div id="terminal" style="display:none;"></div><span class="cursor" style="display:none;"></span>
   <div id="counter">Loading views...</div>
 
   <script>
@@ -111,46 +121,16 @@
     ];
 
     const terminal = document.getElementById("terminal");
+    const cursor = document.querySelector(".cursor");
     const body = document.getElementById("body");
     const flash = document.getElementById("flash");
+    const startBtn = document.getElementById("startBtn");
     let lineIndex = 0;
 
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = new AudioContext();
-    let glitchSource, keyBuffer, endBuffer;
-
-    function loadSound(url) {
-      return fetch(url)
-        .then(response => response.arrayBuffer())
-        .then(buffer => audioCtx.decodeAudioData(buffer));
-    }
-
-    async function loadAndPlay() {
-      const glitch = await loadSound("https://cdn.freesound.org/previews/341/341695_6262510-lq.mp3");
-      keyBuffer = await loadSound("https://cdn.freesound.org/previews/270/270312_5123851-lq.mp3");
-      endBuffer = await loadSound("https://cdn.freesound.org/previews/352/352661_4019027-lq.mp3");
-      glitchSource = audioCtx.createBufferSource();
-      glitchSource.buffer = glitch;
-      glitchSource.loop = true;
-      glitchSource.connect(audioCtx.destination);
-      glitchSource.start();
-    }
-
-    function playKeySound() {
-      if (!keyBuffer) return;
-      const src = audioCtx.createBufferSource();
-      src.buffer = keyBuffer;
-      src.connect(audioCtx.destination);
-      src.start(0);
-    }
-
-    function playEndSound() {
-      if (!endBuffer) return;
-      const src = audioCtx.createBufferSource();
-      src.buffer = endBuffer;
-      src.connect(audioCtx.destination);
-      src.start(0);
-    }
+    const keyAudio = new Audio("https://upload.wikimedia.org/wikipedia/commons/4/4e/Beep-09.wav");
+    const endAudio = new Audio("https://upload.wikimedia.org/wikipedia/commons/2/28/White_noise.wav");
+    const loopAudio = new Audio("https://upload.wikimedia.org/wikipedia/commons/3/38/Glitch_sound_effect.ogg");
+    loopAudio.loop = true;
 
     function typeHTMLContent(text, callback) {
       const div = document.createElement('div');
@@ -167,7 +147,7 @@
             function typeText() {
               if (i < text.length) {
                 terminal.innerHTML += text.charAt(i);
-                playKeySound();
+                keyAudio.cloneNode().play();
                 i++;
                 setTimeout(typeText, 100);
               } else {
@@ -197,7 +177,7 @@
         });
       } else {
         setTimeout(() => {
-          playEndSound();
+          endAudio.play();
           flash.style.animation = "flash 1s ease-in-out";
           setTimeout(() => {
             body.style.backgroundColor = "black";
@@ -207,19 +187,20 @@
       }
     }
 
-    window.addEventListener('load', () => {
-      audioCtx.resume().then(() => {
-        loadAndPlay().then(() => {
-          typeNextLine();
-        });
-      });
+    function begin() {
+      startBtn.style.display = 'none';
+      terminal.style.display = 'block';
+      cursor.style.display = 'inline-block';
+      loopAudio.play();
+      typeNextLine();
+    }
+
+    startBtn.addEventListener("click", () => {
+      begin();
     });
 
     fetch('https://api.countapi.xyz/hit/v3d991.github.io/views')
-      .then(res => {
-        if (!res.ok) throw new Error("Network response not ok");
-        return res.json();
-      })
+      .then(res => res.ok ? res.json() : Promise.reject())
       .then(data => {
         document.getElementById("counter").innerText = `👁️ ${data.value} είδαν αυτό το μήνυμα.`;
       })

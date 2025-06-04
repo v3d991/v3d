@@ -5,51 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Signal 001</title>
   <style>
-    /* Reset & βασικό styling */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
-      width: 100%;
-      height: 100%;
-      background-color: #000;         /* Μαύρο φόντο */
+      width: 100%; height: 100%;
+      background-color: #000;
       overflow: hidden;
       font-family: 'Courier New', Courier, monospace;
     }
-
-    /* Overlay για να πατήσει ο χρήστης (πλήρης οθόνη) */
     #start-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
       background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #ff3366;
-      font-size: 24px;
-      cursor: pointer;
-      z-index: 1000;
-      user-select: none;
+      display: flex; justify-content: center; align-items: center;
+      color: #ff3366; font-size: 24px; cursor: pointer;
+      z-index: 1000; user-select: none;
+    }
+    /* Glitch Overlay */
+    #glitch-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      opacity: 0; z-index: 1100;
+      mix-blend-mode: lighten;
+    }
+    /* Base glitch keyframes */
+    @keyframes glitch {
+      0%   { opacity: 0.85; filter: blur(1.5px) contrast(1.7); transform: scaleY(1.03) translateX(-2px);}
+      10%  { opacity: 1; filter: blur(0.5px) hue-rotate(20deg) contrast(2); transform: skewX(3deg) scaleX(1.04);}
+      25%  { opacity: 0.7; filter: blur(0.2px) contrast(1.3); transform: skewY(-1deg) scaleY(1);}
+      38%  { opacity: 1; filter: blur(2px) contrast(2.2); transform: skewX(-6deg) scaleY(0.99);}
+      54%  { opacity: 0.8; filter: blur(1.5px) hue-rotate(-15deg) contrast(2.2); transform: translateY(-4px);}
+      66%  { opacity: 1; filter: blur(1.8px) hue-rotate(70deg) contrast(2); transform: scaleX(1.02);}
+      78%  { opacity: 0.6; filter: blur(0.7px) contrast(2.5); transform: translateX(7px);}
+      92%  { opacity: 1; filter: blur(1.5px) contrast(2.5); transform: skewY(2deg);}
+      100% { opacity: 0; filter: none; transform: none;}
+    }
+    .glitch-effect { animation: glitch 0.85s cubic-bezier(.5,2.2,.6,1) both; }
+
+    /* Extra glitch bars */
+    .glitch-bar {
+      position: absolute; left: 0;
+      width: 100vw; height: 14px;
+      background: linear-gradient(90deg, #ff3366, #00fff2, #fff, #ff3366 85%);
+      opacity: 0.7;
+      filter: blur(2.5px) brightness(1.8);
+      mix-blend-mode: lighten;
+      pointer-events: none;
+      z-index: 1150;
+      display: none;
+    }
+    .glitch-bar.active {
+      display: block;
+      animation: glitchBarAnim 0.38s steps(2) 1;
+    }
+    @keyframes glitchBarAnim {
+      0% { opacity: 0.7; transform: translateY(0) scaleX(1.2);}
+      20% { opacity: 1; transform: translateY(10px) scaleX(1.6) skewX(-7deg);}
+      55% { opacity: 0.5; transform: translateY(-15px) scaleX(1) skewX(7deg);}
+      100% { opacity: 0; transform: translateY(0) scaleX(1);}
     }
 
-    /* “signal_001” πάνω αριστερά - κρυφό αρχικά, μεγάλο μέγεθος, πιο αργή μετάβαση */
     #signal-tag {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: #ff3366;                    /* Ροζ-κόκκινο χρώμα */
-      font-size: 24px;                   /* Μεγαλύτερο μέγεθος */
-      display: none;                     /* Κρυφό μέχρι να πατήσει ο χρήστης */
-      opacity: 1;
-      transition: opacity 0.4s ease-in-out; /* Πιο αργή fade (0.4s) */
+      position: absolute; top: 10px; left: 10px;
+      color: #ff3366; font-size: 24px;
+      display: none; opacity: 1;
+      transition: opacity 0.4s ease-in-out;
     }
-
-    /* Container για το typing effect - κρυφό αρχικά */
     #typing-container {
       display: none;
       justify-content: center;
@@ -63,75 +83,50 @@
       font-size: 28px;
       line-height: 1.3;
     }
-
-    /* Overlay για flash εφέ (λευκή οθόνη) - κρυφό αρχικά */
     #flash-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-color: #fff;
       opacity: 0;
       pointer-events: none;
       z-index: 900;
     }
-
-    /* “Flash” animation: εμφανίζει στιγμιαία λευκό κάλυμμα */
     @keyframes flash {
       0%   { opacity: 0; }
       50%  { opacity: 1; }
       100% { opacity: 0; }
     }
-    .flash {
-      animation: flash 0.6s ease-in-out;   /* 0.6s flash */
-    }
-
-    /* Τελικό μήνυμα: λίγο θολό (blur 2px), κρυφό αρχικά */
+    .flash { animation: flash 0.6s ease-in-out; }
     #final-message {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       color: #fff;
       font-size: 24px;
-      filter: blur(2px);                   /* Μικρή θολούρα */
-      display: none;                       /* Κρυφό μέχρι τη στιγμή του */
+      filter: blur(2px);
+      display: none;
       white-space: nowrap;
       z-index: 800;
     }
   </style>
 </head>
 <body>
-  <!-- Overlay για να ξεκινήσει η ακολουθία με κλικ -->
   <div id="start-overlay">ΞΥΠΝΑ.</div>
-
-  <!-- Πάνω αριστερά: signal_001 (αρχικά κρυφό) -->
-  <div id="signal-tag">signal_001</div>
-
-  <!-- Κεντρικό container για typing effect (αρχικά κρυφό) -->
-  <div id="typing-container">
-    <div id="typing-text"></div>
+  <div id="glitch-overlay">
+    <div class="glitch-bar" id="bar1"></div>
+    <div class="glitch-bar" id="bar2"></div>
+    <div class="glitch-bar" id="bar3"></div>
   </div>
-
-  <!-- Overlay για το flash effect (αρχικά κρυφό) -->
+  <div id="signal-tag">signal_001</div>
+  <div id="typing-container"><div id="typing-text"></div></div>
   <div id="flash-overlay"></div>
-
-  <!-- Τελικό λίγο θολό μήνυμα (αρχικά κρυφό) -->
   <div id="final-message">Signal_001&nbsp;→&nbsp;d3livered</div>
-
-  <!-- Ενσωματωμένοι ήχοι -->
-  <!-- 1) Πιο δυνατό beep για το flash -->
+  <!-- Πιο δυνατό beep! -->
   <audio id="beep-audio"
-         src="data:audio/wav;base64,UklGRpgiAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YXQiAAAAAAIEAAj3C+EPuxOCFz+v+7HxN+/////v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/" 
-         preload="auto"></audio>
-  <!-- 2) placeholder για “signal blinking” ήχο (glitch) -->
+    src="data:audio/wav;base64,UklGRkQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YYAAAD/////AAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAD/AAD//wAAgP8AAAD/AAD///8AAP8AAAD/AAD///8AAAAA"
+    preload="auto"></audio>
   <audio id="signal-audio" src="glitch.wav" preload="auto" loop></audio>
-
   <script>
     let audioContextUnlocked = false;
-
-    // -------- Συνάρτηση για να ξεκλειδώσουμε το AudioContext --------
     function unlockAudioContext() {
       if (audioContextUnlocked) return;
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -139,29 +134,19 @@
       const gainNode = ctx.createGain();
       osc.connect(gainNode);
       gainNode.connect(ctx.destination);
-      gainNode.gain.value = 0; // σιωπηλό
+      gainNode.gain.value = 0;
       osc.start();
       osc.stop(ctx.currentTime + 0.02);
       audioContextUnlocked = true;
     }
 
-    // -------- ΠΛΗΚΤΡΟΛΟΓΗΣΗ --------
-    const lines = [
-      "ΞΥΠΝΑ.",
-      "ΟΧΙ ΜΕ ΚΑΦΕ.",
-      "ΜΕ ΔΕΔΟΜΕΝΑ."
-    ];
+    const lines = ["ΞΥΠΝΑ.","ΟΧΙ ΜΕ ΚΑΦΕ.","ΜΕ ΔΕΔΟΜΕΝΑ."];
     const typingEl = document.getElementById("typing-text");
     const typingContainer = document.getElementById("typing-container");
-    const typingSpeed = 100;               // ms ανά γράμμα
-    let currentLine = 0;
-    let currentChar = 0;
-
+    const typingSpeed = 100;
+    let currentLine = 0, currentChar = 0;
     function typeNextChar() {
-      if (currentLine >= lines.length) {
-        onTypingComplete();
-        return;
-      }
+      if (currentLine >= lines.length) { onTypingComplete(); return; }
       const lineText = lines[currentLine];
       if (currentChar < lineText.length) {
         typingEl.textContent += lineText.charAt(currentChar);
@@ -169,28 +154,35 @@
         setTimeout(typeNextChar, typingSpeed);
       } else {
         typingEl.textContent += "\n";
-        currentLine++;
-        currentChar = 0;
+        currentLine++; currentChar = 0;
         setTimeout(typeNextChar, typingSpeed);
       }
     }
 
+    function glitchBars() {
+      // Παίζει τυχαία τις glitch bars για ακόμα πιο "σπασμένο" οπτικό
+      const bars = [document.getElementById('bar1'), document.getElementById('bar2'), document.getElementById('bar3')];
+      bars.forEach(bar => { bar.style.top = `${Math.random() * 80 + 5}%`; bar.classList.remove('active'); });
+      let i = 0;
+      const glitchInt = setInterval(() => {
+        bars.forEach(bar => bar.classList.remove('active'));
+        if (i > 4) { bars.forEach(bar => bar.classList.remove('active')); clearInterval(glitchInt); return;}
+        const idx = Math.floor(Math.random() * bars.length);
+        bars[idx].classList.add('active');
+        setTimeout(() => { bars[idx].classList.remove('active'); }, 250 + Math.random()*80);
+        i++;
+      }, 90 + Math.random()*40);
+    }
+
     function onTypingComplete() {
       setTimeout(() => {
-        // Πριν το flash ξεκινήσει, σταματάμε τον glitch ήχο
         const signalAudio = document.getElementById("signal-audio");
-        signalAudio.pause();
-        signalAudio.currentTime = 0;
-
-        // 1) Παίζουμε beep για το flash (όχι fade, max volume)
+        signalAudio.pause(); signalAudio.currentTime = 0;
         const beepAudio = document.getElementById("beep-audio");
-        beepAudio.volume = 1; // μέγιστη ένταση
+        beepAudio.volume = 1; // πιο δυνατό, άμα θες και 2(!) κάντο 2
         beepAudio.currentTime = 0;
         beepAudio.play().catch(() => {});
-
-        // 2) Flash εφέ
         document.getElementById("flash-overlay").classList.add("flash");
-
         setTimeout(() => {
           document.getElementById("flash-overlay").classList.remove("flash");
           document.getElementById("signal-tag").style.display = "none";
@@ -200,35 +192,30 @@
       }, 2000);
     }
 
-    // -------- Όταν ο χρήστης πατήσει στο overlay --------
     document.getElementById("start-overlay").addEventListener("click", () => {
-      // 1) Αφαιρούμε το overlay
       document.getElementById("start-overlay").style.display = "none";
-      // 2) Ξεκλειδώνουμε το AudioContext
       unlockAudioContext();
-      // 3) Ξεκινάμε την ακολουθία
-      startSequence();
+      // Hardcore glitch effect
+      const glitch = document.getElementById("glitch-overlay");
+      glitch.classList.add("glitch-effect");
+      glitchBars();
+      setTimeout(() => {
+        glitch.classList.remove("glitch-effect");
+        startSequence();
+      }, 900); // πιο αργό glitch!
     });
 
     function startSequence() {
       const signalTag = document.getElementById("signal-tag");
       const signalAudio = document.getElementById("signal-audio");
-
-      // 1) Εμφανίζουμε signal-tag
-      signalTag.style.display = "block";
-      signalTag.style.opacity = "1";
-
-      // 2) Παίζουμε τον glitch ήχο ασταμάτητα μέχρι το flash
+      signalTag.style.display = "block"; signalTag.style.opacity = "1";
       signalAudio.currentTime = 0;
       signalAudio.play().catch(() => {});
-
-      // 3) Κάνουμε fade in/out κάθε 400ms για 3s
       let visible = true;
       const blinkInterval = setInterval(() => {
         visible = !visible;
         signalTag.style.opacity = visible ? "1" : "0";
       }, 400);
-
       setTimeout(() => {
         clearInterval(blinkInterval);
         signalTag.style.opacity = "1";
